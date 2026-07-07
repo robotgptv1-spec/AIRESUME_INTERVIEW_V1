@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InterviewIQ — AI Mock Interview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◆</span>
+    <span class="brand-name">Interview<span class="accent">IQ</span></span>
+  </div>
+  <div class="ollama-pill" id="ollamaStatus">
+    <span class="dot" id="ollamaDot"></span>
+    <span id="ollamaText">Checking Ollama…</span>
+  </div>
+</header>
+
+<nav class="stepper" id="stepper">
+  <div class="step active" data-step="upload"><span class="step-num">01</span><span>Upload</span></div>
+  <div class="step-line"></div>
+  <div class="step" data-step="screening"><span class="step-num">02</span><span>Screening</span></div>
+  <div class="step-line"></div>
+  <div class="step" data-step="interview"><span class="step-num">03</span><span>Interview</span></div>
+  <div class="step-line"></div>
+  <div class="step" data-step="report"><span class="step-num">04</span><span>Report</span></div>
+</nav>
+
+<main class="stage-wrap">
+
+  <!-- STAGE 1: UPLOAD -->
+  <section class="stage active" id="stage-upload">
+    <h1 class="stage-title">Kya aap iss role ke liye <span class="accent">ready</span> ho?</h1>
+    <p class="stage-sub">Resume aur Job Description daalo, AI turant fitment score aur gap analysis nikaal dega.</p>
+
+    <div class="card upload-grid">
+      <label class="dropzone" id="dropResume">
+        <input type="file" id="resumeFile" accept=".pdf,.docx,.txt" hidden>
+        <div class="dz-icon">📄</div>
+        <div class="dz-label">Resume</div>
+        <div class="dz-sub" id="resumeFileName">PDF / DOCX / TXT — click ya drag karo</div>
+      </label>
+
+      <label class="dropzone" id="dropJD">
+        <input type="file" id="jdFile" accept=".pdf,.docx,.txt" hidden>
+        <div class="dz-icon">🎯</div>
+        <div class="dz-label">Job Description</div>
+        <div class="dz-sub" id="jdFileName">PDF / DOCX / TXT — click ya drag karo</div>
+      </label>
+    </div>
+
+    <div class="card difficulty-card">
+      <div class="field-label">Interview difficulty</div>
+      <div class="pill-group" id="difficultyGroup">
+        <button class="pill" data-val="fresher">Fresher</button>
+        <button class="pill active" data-val="mid">Mid-level</button>
+        <button class="pill" data-val="senior">Senior</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnScreen">Run Screening →</button>
+    <div class="error-msg" id="uploadError"></div>
+  </section>
+
+  <!-- STAGE 2: SCREENING -->
+  <section class="stage" id="stage-screening">
+    <div class="scan-wrap">
+      <svg class="scan-ring" id="scanRing" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="88" class="ring-bg"/>
+        <circle cx="100" cy="100" r="88" class="ring-fg" id="ringFg"/>
+        <text x="100" y="95" text-anchor="middle" class="ring-score" id="ringScore">0%</text>
+        <text x="100" y="118" text-anchor="middle" class="ring-caption">Fitment</text>
+      </svg>
+    </div>
+
+    <div class="metrics-grid" id="metricsGrid" style="display:none">
+      <div class="metric-card">
+        <div class="metric-label">Semantic Match</div>
+        <div class="metric-val" id="semSim">–</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Skill Coverage</div>
+        <div class="metric-val" id="skillCov">–</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Skills Matched</div>
+        <div class="metric-val" id="matchedCount">–</div>
+      </div>
+    </div>
+
+    <div class="skills-panel" id="skillsPanel" style="display:none">
+      <div class="skills-col">
+        <div class="skills-head good">✓ Matched Skills</div>
+        <div class="tag-cloud" id="matchedSkills"></div>
+      </div>
+      <div class="skills-col">
+        <div class="skills-head bad">⚠ Missing Skills</div>
+        <div class="tag-cloud" id="missingSkills"></div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnStartInterview" style="display:none">Start Mock Interview →</button>
+  </section>
+
+  <!-- STAGE 3: INTERVIEW -->
+  <section class="stage" id="stage-interview">
+    <div class="interview-head">
+      <div class="q-progress">
+        <span id="qCurrentNum">1</span> / <span id="qTotalNum">5</span>
+      </div>
+      <div class="timer" id="qTimer">00:00</div>
+    </div>
+
+    <div class="card question-card">
+      <div class="q-label">Question</div>
+      <div class="q-text" id="questionText">Loading questions…</div>
+    </div>
+
+    <div class="card answer-card">
+      <div class="answer-toolbar">
+        <div class="field-label">Aapka Jawab</div>
+        <button class="mic-btn" id="micBtn" title="Voice input">🎙️</button>
+      </div>
+      <textarea id="answerInput" placeholder="Yahan type karo, ya mic dabao..." rows="6"></textarea>
+      <button class="btn-primary" id="btnSubmitAnswer">Submit Answer</button>
+    </div>
+
+    <div class="feedback-chip" id="feedbackChip" style="display:none">
+      <span class="chip-score" id="chipScore">–</span>
+      <span class="chip-text" id="chipText"></span>
+    </div>
+  </section>
+
+  <!-- STAGE 4: REPORT -->
+  <section class="stage" id="stage-report">
+    <h1 class="stage-title">Final <span class="accent">Evaluation</span> Report</h1>
+
+    <div class="report-summary" id="reportSummary">
+      <div class="summary-card">
+        <div class="summary-label">Fitment Score</div>
+        <div class="summary-val" id="repFitment">–</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Avg Answer Score</div>
+        <div class="summary-val" id="repAvgScore">–</div>
+      </div>
+    </div>
+
+    <div class="card report-body" id="reportBody">Generating report…</div>
+
+    <div class="report-actions">
+      <button class="btn-secondary" id="btnDownload">⬇ Download Report</button>
+      <button class="btn-primary" id="btnRestart">Start New Interview</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
